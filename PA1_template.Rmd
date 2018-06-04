@@ -5,14 +5,14 @@ date: "4 de junio de 2018"
 output: html_document
 ---
 
-```{r SetOptions, echo=TRUE}
-opts_chunk$set(echo = TRUE)
-```
-
 ```{r Libraries}
 library(knitr)
 library(ggplot2)
 library(data.table)
+```
+
+```{r SetOptions, echo=TRUE}
+opts_chunk$set(echo = TRUE)
 ```
 
 1. Code for reading in the dataset and/or processing the data
@@ -49,7 +49,7 @@ h1
 
 5. The 5-minute interval that, on average, contains the maximum number of steps
 ```{r max steps}
-dt[which.max(steps), interval] #806
+dt[which.max(steps), ]
 ```
 
 
