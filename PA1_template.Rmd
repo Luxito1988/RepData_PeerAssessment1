@@ -1,25 +1,80 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template.Rmd"
+author: "Luis Valladares"
+date: "4 de junio de 2018"
+output: html_document
 ---
 
+```{r SetOptions, echo=TRUE}
+opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+```{r Libraries}
+library(knitr)
+library(ggplot2)
+library(data.table)
+```
+
+1. Code for reading in the dataset and/or processing the data
+```{r Reading}
+dt <- fread('activity.csv', header = T)
+dt$date <- as.Date(dt$date, '%Y-%m-%d')
+```
+
+2. Histogram of the total number of steps taken each day
+```{r Histogram Steps}
+dt0 <- na.omit(dt)
+g <- ggplot(dt0, aes(steps))
+g1 <- g + geom_histogram(fill = 'yellow') + labs(x = 'Number of steps taken each day') + scale_y_continuous(breaks=seq(0, 12000, 3000))
+g1
+```
 
 
+3. Mean and median number of steps taken each day
+```{r Mean and median}
+x <- mean(dt$steps, na.rm = T)
+x
+x1 <- median(dt$steps, na.rm = T)
+x1
+```
 
-## What is mean total number of steps taken per day?
+4. Time series plot of the average number of steps taken
+```{r Time series steps}
+dt1 <- dt0[, .(stepsAve = mean(steps)), by = date]
+h <- ggplot(dt1, aes(date, stepsAve))
+h1 <- h + geom_line(color = "red") + labs(y = 'Average number of steps') + labs(title = 'Time series plot')
+h1
+```
 
 
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
+5. The 5-minute interval that, on average, contains the maximum number of steps
+```{r max steps}
+dt[which.max(steps), interval] #806
+```
 
 
+6. Code to describe and show a strategy for imputing missing data
+```{r Imputing missing data}
+dt2 <- dt[, .(stepsN = ifelse(is.na(steps) == T, ifelse(is.na(mean(steps)) == T, 0, mean(steps)), as.double(steps)), steps, interval), by = date]
+dt2
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+7. Histogram of the total number of steps taken each day after missing values are imputed
+```{r Histogram StepsN}
+k <- ggplot(dt2, aes(stepsN))
+k1 <- k + geom_histogram(fill = 'green') + labs(x = 'Number of steps taken each day') + scale_y_continuous(breaks=seq(0, 15000, 3000))
+k1
+```
+
+8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r Plot Interval vs Average number of steps}
+dt3 <- dt2[,.(date, TypeDay = ifelse(weekdays(date) %in% c('sábado', 'domingo'), 'weekend', 'weekday'), stepsN, steps, interval)]
+dt3$TypeDay <- as.factor(dt3$TypeDay) 
+
+dt4 <- dt3[, .(stepsAveXInt = mean(stepsN)), by = .(interval, TypeDay)]
+
+m <- ggplot(dt4, aes(interval, stepsAveXInt))
+m1 <- m + geom_line(color = "blue") + facet_wrap(~TypeDay, nrow = 2, ncol = 1) + labs(y = 'Average number of steps')
+m1
+```
